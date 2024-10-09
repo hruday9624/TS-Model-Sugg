@@ -1,15 +1,11 @@
 import streamlit as st
 import pandas as pd
 import numpy as np
-import matplotlib
-matplotlib.use('Agg')  # Use a non-GUI backend
 import matplotlib.pyplot as plt
-from io import StringIO
 from statsmodels.tsa.stattools import adfuller
 from statsmodels.tsa.seasonal import seasonal_decompose
 
 def suggest_forecasting_methods(time_series, freq):
-    # Ensure the index is datetime
     if not isinstance(time_series.index, pd.DatetimeIndex):
         st.error("The time series index must be a pandas DatetimeIndex.")
         return
@@ -17,27 +13,23 @@ def suggest_forecasting_methods(time_series, freq):
     st.subheader("Time Series Data Plot")
     st.line_chart(time_series)
 
-    # 1. Test for Stationarity
     adf_result = adfuller(time_series.dropna())
     p_value = adf_result[1]
     st.write(f"**ADF Statistic**: {adf_result[0]:.4f}")
     st.write(f"**p-value**: {p_value:.4f}")
 
-    if p_value < 0.05:
+    stationary = p_value < 0.05
+    if stationary:
         st.success("The data is stationary.")
-        stationary = True
     else:
         st.warning("The data is non-stationary.")
-        stationary = False
 
-    # 2. Decompose the Time Series
     try:
         decomposition = seasonal_decompose(time_series, model='additive', period=freq)
         trend = decomposition.trend
         seasonal = decomposition.seasonal
         residual = decomposition.resid
 
-        # Plot decomposition
         st.subheader("Decomposition of Time Series")
         fig, axes = plt.subplots(4, 1, figsize=(10, 8), sharex=True)
         axes[0].plot(time_series, label='Original')
@@ -49,13 +41,10 @@ def suggest_forecasting_methods(time_series, freq):
         axes[3].plot(residual, label='Residuals', color='red')
         axes[3].legend(loc='upper left')
         st.pyplot(fig)
-    except Exception as e:
+    except ValueError as e:
         st.error(f"Seasonal decomposition was not successful: {e}")
-        trend = None
-        seasonal = None
-        residual = None
+        trend = seasonal = residual = None
 
-    # 3. Analyze Components
     has_trend = trend is not None and trend.dropna().std() > 0
     has_seasonality = seasonal is not None and seasonal.dropna().std() > 0
 
@@ -69,10 +58,7 @@ def suggest_forecasting_methods(time_series, freq):
     else:
         st.info("No significant seasonality detected.")
 
-    # 4. Provide Recommendations
     st.subheader("Recommendations:")
-    recommendations = []
-
     if not stationary:
         st.write("- Consider differencing or transforming the data to achieve stationarity.")
 
@@ -99,7 +85,6 @@ def main():
     uploaded_file = st.file_uploader("Choose a CSV or Excel file", type=["csv", "xlsx"])
 
     if uploaded_file is not None:
-        # Read the uploaded file based on its type
         try:
             if uploaded_file.name.endswith(".csv"):
                 df = pd.read_csv(uploaded_file)
@@ -112,27 +97,16 @@ def main():
             st.write("First few rows of your data:")
             st.dataframe(df.head())
 
-            # Let the user select the date and value columns
             columns = df.columns.tolist()
             date_col = st.selectbox("Select the date column:", options=columns)
             value_col = st.selectbox("Select the value column:", options=columns, index=1 if len(columns) > 1 else 0)
 
-            # Convert the date column to datetime
             df[date_col] = pd.to_datetime(df[date_col], errors='coerce')
-
-            # Drop rows with invalid dates
             df = df.dropna(subset=[date_col])
-
-            # Set the date column as the index
             df.set_index(date_col, inplace=True)
-
-            # Sort the DataFrame by date
             df.sort_index(inplace=True)
-
-            # Handle missing values in the value column
             df[value_col].interpolate(method='time', inplace=True)
 
-            # Let the user specify the frequency if not inferable
             freq_input = st.text_input("Specify the frequency of your data (e.g., 'D' for daily, 'M' for monthly):", value='M')
             try:
                 df = df.asfreq(freq_input)
@@ -143,11 +117,10 @@ def main():
                 else:
                     st.write(f"Inferred frequency: {freq}")
                     freq = pd.Timedelta(freq).days or 1
-            except Exception as e:
+            except ValueError as e:
                 st.error(f"Error in setting frequency: {e}")
                 freq = st.number_input("Specify the period of seasonality (e.g., 12 for yearly seasonality in monthly data):", min_value=1, value=12)
 
-            # Call the function
             suggest_forecasting_methods(df[value_col], freq)
         except Exception as e:
             st.error(f"An error occurred: {e}")
