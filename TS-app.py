@@ -97,7 +97,7 @@ def main():
             df = df.dropna(subset=[date_col])
             df.set_index(date_col, inplace=True)
             df.sort_index(inplace=True)
-                        freq_input = st.text_input("Specify the frequency of your data (e.g., 'D' for daily, 'M' for monthly):", value='M')
+            freq_input = st.text_input("Specify the frequency of your data (e.g., 'D' for daily, 'M' for monthly):", value='M')
             try:
                 df = df.asfreq(freq_input)
                 freq = pd.infer_freq(df.index)
