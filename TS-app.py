@@ -116,7 +116,7 @@ def main():
                     freq = st.number_input("Specify the period of seasonality (e.g., 12 for yearly seasonality in monthly data):", min_value=1, value=12)
                 else:
                     st.write(f"Inferred frequency: {freq}")
-                    freq = pd.Timedelta(freq).days or 1
+                    freq = pd.Timedelta(freq).days if 'D' in freq else int(freq.strip('W')) * 7 if 'W' in freq else 1
             except ValueError as e:
                 st.error(f"Error in setting frequency: {e}")
                 freq = st.number_input("Specify the period of seasonality (e.g., 12 for yearly seasonality in monthly data):", min_value=1, value=12)
