@@ -5,6 +5,59 @@ import matplotlib.pyplot as plt
 from statsmodels.tsa.stattools import adfuller
 from statsmodels.tsa.seasonal import seasonal_decompose
 
+def main():
+    st.title("\ud83d\udcc8 Time Series Forecasting Method Suggestion App")
+
+    st.write("""
+    Upload your time series data in CSV or Excel format. The file should contain at least two columns:
+    - **Date**: The date or datetime information.
+    - **Value**: The numerical values of your time series.
+    """)
+
+    uploaded_file = st.file_uploader("Choose a CSV or Excel file", type=["csv", "xlsx"])
+
+    if uploaded_file is not None:
+        try:
+            if uploaded_file.name.endswith(".csv"):
+                df = pd.read_csv(uploaded_file)
+            elif uploaded_file.name.endswith(".xlsx"):
+                df = pd.read_excel(uploaded_file)
+            else:
+                st.error("Unsupported file format.")
+                return
+
+            st.write("First few rows of your data:")
+            st.dataframe(df.head())
+
+            columns = df.columns.tolist()
+            date_col = st.selectbox("Select the date column:", options=columns, key='date_col')
+            numerical_columns = df.select_dtypes(include=['number']).columns.tolist()
+            value_col = st.selectbox("Select the target column:", options=numerical_columns, key='value_col')
+
+            df[date_col] = pd.to_datetime(df[date_col], errors='coerce')
+            df = df.dropna(subset=[date_col])
+            df.set_index(date_col, inplace=True)
+            df.sort_index(inplace=True)
+            freq_input = st.text_input("Specify the frequency of your data (e.g., 'D' for daily, 'M' for monthly):", value='M')
+            try:
+                df = df.asfreq(freq_input)
+                freq = pd.infer_freq(df.index)
+                if freq is None:
+                    st.warning("Frequency could not be inferred. Please provide the period for seasonality.")
+                    freq = st.number_input("Specify the period of seasonality (e.g., 12 for yearly seasonality in monthly data):", min_value=1, value=12)
+                else:
+                    st.write(f"Inferred frequency: {freq}")
+                    freq = pd.Timedelta(freq).days if 'D' in freq else int(freq.strip('W')) * 7 if 'W' in freq else 1
+            except ValueError as e:
+                st.error(f"Error in setting frequency: {e}")
+                freq = st.number_input("Specify the period of seasonality (e.g., 12 for yearly seasonality in monthly data):", min_value=1, value=12)
+
+            suggest_forecasting_methods(df[value_col], freq)
+        except Exception as e:
+            st.error(f"An error occurred: {e}")
+    else:
+        st.info("Awaiting CSV or Excel file upload.")
+
 def suggest_forecasting_methods(time_series, freq):
     if not isinstance(time_series.index, pd.DatetimeIndex):
         st.error("The time series index must be a pandas DatetimeIndex.")
@@ -67,59 +120,6 @@ def suggest_forecasting_methods(time_series, freq):
         st.write("- Recommended methods: **Simple Exponential Smoothing**, **ARIMA**.")
 
     st.write("- For complex patterns, consider machine learning models like **LSTM networks**.")
-
-def main():
-    st.title("\ud83d\udcc8 Time Series Forecasting Method Suggestion App")
-
-    st.write("""
-    Upload your time series data in CSV or Excel format. The file should contain at least two columns:
-    - **Date**: The date or datetime information.
-    - **Value**: The numerical values of your time series.
-    """)
-
-    uploaded_file = st.file_uploader("Choose a CSV or Excel file", type=["csv", "xlsx"])
-
-    if uploaded_file is not None:
-        try:
-            if uploaded_file.name.endswith(".csv"):
-                df = pd.read_csv(uploaded_file)
-            elif uploaded_file.name.endswith(".xlsx"):
-                df = pd.read_excel(uploaded_file)
-            else:
-                st.error("Unsupported file format.")
-                return
-
-            st.write("First few rows of your data:")
-            st.dataframe(df.head())
-
-            columns = df.columns.tolist()
-            date_col = st.selectbox("Select the date column:", options=columns, key='date_col')
-            numerical_columns = df.select_dtypes(include=['number']).columns.tolist()
-            value_col = st.selectbox("Select the target column:", options=numerical_columns, key='value_col')
-
-            df[date_col] = pd.to_datetime(df[date_col], errors='coerce')
-            df = df.dropna(subset=[date_col])
-            df.set_index(date_col, inplace=True)
-            df.sort_index(inplace=True)
-            freq_input = st.text_input("Specify the frequency of your data (e.g., 'D' for daily, 'M' for monthly):", value='M')
-            try:
-                df = df.asfreq(freq_input)
-                freq = pd.infer_freq(df.index)
-                if freq is None:
-                    st.warning("Frequency could not be inferred. Please provide the period for seasonality.")
-                    freq = st.number_input("Specify the period of seasonality (e.g., 12 for yearly seasonality in monthly data):", min_value=1, value=12)
-                else:
-                    st.write(f"Inferred frequency: {freq}")
-                    freq = pd.Timedelta(freq).days if 'D' in freq else int(freq.strip('W')) * 7 if 'W' in freq else 1
-            except ValueError as e:
-                st.error(f"Error in setting frequency: {e}")
-                freq = st.number_input("Specify the period of seasonality (e.g., 12 for yearly seasonality in monthly data):", min_value=1, value=12)
-
-            suggest_forecasting_methods(df[value_col], freq)
-        except Exception as e:
-            st.error(f"An error occurred: {e}")
-    else:
-        st.info("Awaiting CSV or Excel file upload.")
 
 if __name__ == "__main__":
     main()
