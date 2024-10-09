@@ -17,16 +17,20 @@ def suggest_forecasting_methods(time_series, freq):
     st.subheader("Time Series Data Plot")
     st.line_chart(time_series)
 
-    adf_result = adfuller(time_series.dropna())
-    p_value = adf_result[1]
-    st.write(f"**ADF Statistic**: {adf_result[0]:.4f}")
-    st.write(f"**p-value**: {p_value:.4f}")
+    try:
+        adf_result = adfuller(time_series.dropna())
+        p_value = adf_result[1]
+        st.write(f"**ADF Statistic**: {adf_result[0]:.4f}")
+        st.write(f"**p-value**: {p_value:.4f}")
 
-    stationary = p_value < 0.05
-    if stationary:
-        st.success("The data is stationary.")
-    else:
-        st.warning("The data is non-stationary.")
+        stationary = p_value < 0.05
+        if stationary:
+            st.success("The data is stationary.")
+        else:
+            st.warning("The data is non-stationary.")
+    except Exception as e:
+        st.error(f"ADF test was not successful: {e}")
+        return
 
     try:
         if len(time_series.dropna()) < 2 * freq:
