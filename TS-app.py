@@ -111,10 +111,6 @@ def main():
             st.write("First few rows of your data:")
             st.dataframe(df.head())
 
-            columns = df.columns.tolist()
-            date_col = st.selectbox("Select the date column:", options=columns)
-            value_col = st.selectbox("Select the value column:", options=columns, index=1 if len(columns) > 1 else 0)
-
             df[date_col] = pd.to_datetime(df[date_col], errors='coerce')
             df = df.dropna(subset=[date_col])
             df.set_index(date_col, inplace=True)
