@@ -14,7 +14,6 @@ def suggest_forecasting_methods(time_series, freq):
     st.line_chart(time_series)
 
     try:
-            try:
         if len(valid_data) < 2 * freq:
             raise ValueError("The length of the time series is less than twice the specified frequency. Please provide more data or reduce the frequency.")
         decomposition = seasonal_decompose(valid_data, model='additive', period=freq)
