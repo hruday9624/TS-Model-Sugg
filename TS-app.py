@@ -10,32 +10,11 @@ def suggest_forecasting_methods(time_series, freq):
         st.error("The time series index must be a pandas DatetimeIndex.")
         return
 
-    if time_series.empty:
-        st.error("The time series is empty after processing. Please check your data.")
-        return
-
-    st.subheader("Time Series Data Plot")
+        st.subheader("Time Series Data Plot")
     st.line_chart(time_series)
 
     try:
-        valid_data = time_series.dropna()
-        if len(valid_data) == 0:
-            raise ValueError("The time series is empty after dropping NaN values.")
-        adf_result = adfuller(valid_data)
-        p_value = adf_result[1]
-        st.write(f"**ADF Statistic**: {adf_result[0]:.4f}")
-        st.write(f"**p-value**: {p_value:.4f}")
-
-        stationary = p_value < 0.05
-        if stationary:
-            st.success("The data is stationary.")
-        else:
-            st.warning("The data is non-stationary.")
-    except Exception as e:
-        st.error(f"ADF test was not successful: {e}")
-        return
-
-    try:
+            try:
         if len(valid_data) < 2 * freq:
             raise ValueError("The length of the time series is less than twice the specified frequency. Please provide more data or reduce the frequency.")
         decomposition = seasonal_decompose(valid_data, model='additive', period=freq)
@@ -119,13 +98,7 @@ def main():
             df = df.dropna(subset=[date_col])
             df.set_index(date_col, inplace=True)
             df.sort_index(inplace=True)
-            df[value_col].interpolate(method='time', inplace=True)
-
-            if df[value_col].isnull().all():
-                st.error("The value column contains only NaN values after interpolation. Please check your data.")
-                return
-
-            freq_input = st.text_input("Specify the frequency of your data (e.g., 'D' for daily, 'M' for monthly):", value='M')
+                        freq_input = st.text_input("Specify the frequency of your data (e.g., 'D' for daily, 'M' for monthly):", value='M')
             try:
                 df = df.asfreq(freq_input)
                 freq = pd.infer_freq(df.index)
