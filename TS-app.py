@@ -107,13 +107,13 @@ def main():
                 st.error("Unsupported file format.")
                 return
 
+            st.write("First few rows of your data:")
+            st.dataframe(df.head())
+
             columns = df.columns.tolist()
             date_col = st.selectbox("Select the date column:", options=columns, key='date_col')
             numerical_columns = df.select_dtypes(include=['number']).columns.tolist()
             value_col = st.selectbox("Select the target column:", options=numerical_columns, key='value_col')
-
-            st.write("First few rows of your data:")
-            st.dataframe(df.head())
 
             df[date_col] = pd.to_datetime(df[date_col], errors='coerce')
             df = df.dropna(subset=[date_col])
