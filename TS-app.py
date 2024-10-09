@@ -106,7 +106,11 @@ def main():
 
             columns = df.columns.tolist()
             date_col = st.selectbox("Select the date column:", options=columns, key='date_col')
-            value_col = st.selectbox("Select the value column:", options=columns, index=1 if len(columns) > 1 else 0, key='value_col')
+            numerical_columns = df.select_dtypes(include=['number']).columns.tolist()
+            if len(numerical_columns) > 1:
+                value_col = st.selectbox("Select the target column:", options=numerical_columns, key='value_col')
+            else:
+                value_col = numerical_columns[0] if numerical_columns else st.selectbox("Select the value column:", options=columns, index=1 if len(columns) > 1 else 0, key='value_col')
 
             st.write("First few rows of your data:")
             st.dataframe(df.head())
