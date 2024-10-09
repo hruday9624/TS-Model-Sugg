@@ -18,10 +18,7 @@ def suggest_forecasting_methods(time_series, freq):
     st.line_chart(time_series)
 
     try:
-        valid_data = time_series.dropna()
-        if len(valid_data) == 0:
-            raise ValueError("The time series is empty after dropping NaN values.")
-        adf_result = adfuller(valid_data)
+        adf_result = adfuller(time_series.dropna())
         p_value = adf_result[1]
         st.write(f"**ADF Statistic**: {adf_result[0]:.4f}")
         st.write(f"**p-value**: {p_value:.4f}")
@@ -36,9 +33,9 @@ def suggest_forecasting_methods(time_series, freq):
         return
 
     try:
-        if len(valid_data) < 2 * freq:
+        if len(time_series.dropna()) < 2 * freq:
             raise ValueError("The length of the time series is less than twice the specified frequency. Please provide more data or reduce the frequency.")
-        decomposition = seasonal_decompose(valid_data, model='additive', period=freq)
+        decomposition = seasonal_decompose(time_series.dropna(), model='additive', period=freq)
         trend = decomposition.trend
         seasonal = decomposition.seasonal
         residual = decomposition.resid
