@@ -29,8 +29,8 @@ def suggest_forecasting_methods(time_series, freq):
         st.warning("The data is non-stationary.")
 
     try:
-        if len(time_series.dropna()) < freq:
-            raise ValueError("The length of the time series is less than the specified frequency. Please provide more data or reduce the frequency.")
+        if len(time_series.dropna()) < 2 * freq:
+            raise ValueError("The length of the time series is less than twice the specified frequency. Please provide more data or reduce the frequency.")
         decomposition = seasonal_decompose(time_series.dropna(), model='additive', period=freq)
         trend = decomposition.trend
         seasonal = decomposition.seasonal
