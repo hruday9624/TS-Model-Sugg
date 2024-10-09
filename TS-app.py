@@ -10,19 +10,14 @@ def suggest_forecasting_methods(time_series, freq):
         st.error("The time series index must be a pandas DatetimeIndex.")
         return
 
-        st.subheader("Time Series Data Plot")
+    st.subheader("Time Series Data Plot")
     st.line_chart(time_series)
 
     try:
-        # Replace the following line:
-# if len(valid_data) < 2 * freq:
-# With this updated line:
-    if len(time_series.dropna()) < 2 * freq:
-        raise ValueError("The length of the time series is less than twice the specified frequency. Please provide more data or reduce the frequency.")
-
-        # Then use the correct variable in the seasonal decomposition:
+        if len(time_series.dropna()) < 2 * freq:
+            raise ValueError("The length of the time series is less than twice the specified frequency. Please provide more data or reduce the frequency.")
+        
         decomposition = seasonal_decompose(time_series.dropna(), model='additive', period=freq)
-        #decomposition = seasonal_decompose(valid_data, model='additive', period=freq)
         trend = decomposition.trend
         seasonal = decomposition.seasonal
         residual = decomposition.resid
@@ -56,6 +51,9 @@ def suggest_forecasting_methods(time_series, freq):
         st.info("No significant seasonality detected.")
 
     st.subheader("Recommendations:")
+    adf_test = adfuller(time_series.dropna())
+    stationary = adf_test[1] < 0.05
+
     if not stationary:
         st.write("- Consider differencing or transforming the data to achieve stationarity.")
 
@@ -71,7 +69,7 @@ def suggest_forecasting_methods(time_series, freq):
     st.write("- For complex patterns, consider machine learning models like **LSTM networks**.")
 
 def main():
-    st.title("📈 Time Series Forecasting Method Suggestion App")
+    st.title("\ud83d\udcc8 Time Series Forecasting Method Suggestion App")
 
     st.write("""
     Upload your time series data in CSV or Excel format. The file should contain at least two columns:
