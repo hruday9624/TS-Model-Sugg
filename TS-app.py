@@ -105,8 +105,8 @@ def main():
                 return
 
             columns = df.columns.tolist()
-            date_col = st.selectbox("Select the date column:", options=columns)
-            value_col = st.selectbox("Select the value column:", options=columns, index=1 if len(columns) > 1 else 0)
+            date_col = st.selectbox("Select the date column:", options=columns, key='date_col')
+            value_col = st.selectbox("Select the value column:", options=columns, index=1 if len(columns) > 1 else 0, key='value_col')
 
             st.write("First few rows of your data:")
             st.dataframe(df.head())
