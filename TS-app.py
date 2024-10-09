@@ -2,7 +2,7 @@ import streamlit as st
 import pandas as pd
 
 def main():
-    st.title("\ud83d\udcc8 Time Series Forecasting Method Suggestion App")
+    st.title("Time Series Forecasting Method Suggestion App")
 
     st.write("""
     Upload your time series data in CSV or Excel format. The file should contain at least two columns:
