@@ -104,6 +104,10 @@ def main():
                 st.error("Unsupported file format.")
                 return
 
+            columns = df.columns.tolist()
+            date_col = st.selectbox("Select the date column:", options=columns)
+            value_col = st.selectbox("Select the value column:", options=columns, index=1 if len(columns) > 1 else 0)
+
             st.write("First few rows of your data:")
             st.dataframe(df.head())
 
