@@ -10,6 +10,10 @@ def suggest_forecasting_methods(time_series, freq):
         st.error("The time series index must be a pandas DatetimeIndex.")
         return
 
+    if time_series.empty:
+        st.error("The time series is empty after processing. Please check your data.")
+        return
+
     st.subheader("Time Series Data Plot")
     st.line_chart(time_series)
 
@@ -25,6 +29,8 @@ def suggest_forecasting_methods(time_series, freq):
         st.warning("The data is non-stationary.")
 
     try:
+        if len(time_series) < freq:
+            raise ValueError("The length of the time series is less than the specified frequency. Please provide more data or reduce the frequency.")
         decomposition = seasonal_decompose(time_series, model='additive', period=freq)
         trend = decomposition.trend
         seasonal = decomposition.seasonal
@@ -106,6 +112,10 @@ def main():
             df.set_index(date_col, inplace=True)
             df.sort_index(inplace=True)
             df[value_col].interpolate(method='time', inplace=True)
+
+            if df[value_col].isnull().all():
+                st.error("The value column contains only NaN values after interpolation. Please check your data.")
+                return
 
             freq_input = st.text_input("Specify the frequency of your data (e.g., 'D' for daily, 'M' for monthly):", value='M')
             try:
