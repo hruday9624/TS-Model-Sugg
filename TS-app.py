@@ -15,7 +15,7 @@ def main():
     if uploaded_file is not None:
         try:
             if uploaded_file.name.endswith(".csv"):
-                df = pd.read_csv(uploaded_file, encoding='utf-8')
+                df = pd.read_csv(uploaded_file, encoding='ISO-8859-1')
             elif uploaded_file.name.endswith(".xlsx"):
                 df = pd.read_excel(uploaded_file)
             else:
@@ -26,7 +26,7 @@ def main():
             st.dataframe(df.head())
 
         except UnicodeEncodeError:
-            st.error("There was an encoding error while reading the file. Please ensure the file is in UTF-8 encoding.")
+            st.error("There was an encoding error while reading the file. Please ensure the file is in a supported encoding format.")
         except Exception as e:
             st.error(f"An error occurred: {e}")
     else:
