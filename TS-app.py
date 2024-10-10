@@ -10,7 +10,7 @@ def main():
     - **Value**: The numerical values of your time series.
     """)
 
-    uploaded_file = st.file_uploader("Choose a CSV or Excel file", type=["csv", "xlsx"], encoding='utf-8')
+    uploaded_file = st.file_uploader("Choose a CSV or Excel file", type=["csv", "xlsx"])
 
     if uploaded_file is not None:
         try:
